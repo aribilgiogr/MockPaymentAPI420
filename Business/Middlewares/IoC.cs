@@ -6,6 +6,7 @@ using Data;
 using Data.Contexts;
 using Data.Repositories;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,7 +17,7 @@ namespace Business.Middlewares
         public static IServiceCollection AddBusinessServices(this IServiceCollection services, IConfiguration configuration)
         {
             // Register your business services here
-            services.AddDbContext<PaymentDbContext>(options => { });
+            services.AddDbContext<PaymentDbContext>(options => options.UseSqlite(configuration.GetConnectionString("data")));
             services.AddScoped<ITransactionRepository, TransactionRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IPaymentService, PaymentService>();
