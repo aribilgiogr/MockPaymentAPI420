@@ -1,13 +1,18 @@
+using Business.Middlewares;
+using Core.Abstracts.IServices;
+using Core.Concretes.DTOs;
+using Core.Concretes.Entities;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddBusinessServices(builder.Configuration);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+app.UseBusinessServices();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -16,29 +21,23 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
+app.MapPost("/api/process/payment", async (PaymentRequest request, IPaymentService paymentService) =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    var transaction = new Transaction
+    {
+        OrderId = request.OrderId,
+        Amount = request.Amount,
+        CardHolderName = request.CardHolderName,
+        MaskedCardNumber = $"**** **** **** {request.CardNumber[^4..]}"
+    };
+    var result = await paymentService.ProcessPaymentAsync(transaction);
+    return result.Success ? Results.Ok(result) : Results.BadRequest(result);
+});
 
-app.MapGet("/weatherforecast", () =>
+app.MapPost("/api/process/refund", async (RefundRequest request, IPaymentService paymentService) =>
 {
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
+    var result = await paymentService.ProcessRefundAsync(request.OrderId, request.Amount);
+    return result.Success ? Results.Ok(result) : Results.BadRequest(result);
+});
 
 app.Run();
-
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

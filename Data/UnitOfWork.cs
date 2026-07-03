@@ -1,18 +1,13 @@
 ﻿using Core.Abstracts;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Data.Contexts;
 
 namespace Data
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private readonly DbContext context;
+        private readonly PaymentDbContext context;
 
-        public UnitOfWork(DbContext context)
+        public UnitOfWork(PaymentDbContext context)
         {
             this.context = context;
         }
