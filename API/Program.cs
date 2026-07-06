@@ -1,3 +1,4 @@
+using API.Filters;
 using Business.Middlewares;
 using Core.Abstracts.IServices;
 using Core.Concretes.DTOs;
@@ -32,12 +33,12 @@ app.MapPost("/api/process/payment", async (PaymentRequest request, IPaymentServi
     };
     var result = await paymentService.ProcessPaymentAsync(transaction);
     return result.Success ? Results.Ok(result) : Results.BadRequest(result);
-});
+}).AddEndpointFilter<RequestValidationFilter<PaymentRequest>>();
 
 app.MapPost("/api/process/refund", async (RefundRequest request, IPaymentService paymentService) =>
 {
     var result = await paymentService.ProcessRefundAsync(request.OrderId, request.Amount);
     return result.Success ? Results.Ok(result) : Results.BadRequest(result);
-});
+}).AddEndpointFilter<RequestValidationFilter<RefundRequest>>();
 
 app.Run();

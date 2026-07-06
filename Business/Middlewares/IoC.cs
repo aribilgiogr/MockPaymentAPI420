@@ -28,6 +28,7 @@ namespace Business.Middlewares
         {
             // Configure your business services here
             app.UseMiddleware<GlobalExceptionHandling>();
+            app.UseMiddleware<ApiKeyHandler>();
             return app;
         }
     }
